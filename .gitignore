@@ -1,2 +1,6 @@
 SECRET*
 !secret/
+
+*.db
+
+__pycache__
