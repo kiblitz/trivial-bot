@@ -1,6 +1,6 @@
 import sqlite3
 
-def create(db_name, *argv):
+def connect(db_name, *argv):
   db_path = "../storage/"+ db_name
   conn = sqlite3.connect(db_path)
   c = conn.cursor()

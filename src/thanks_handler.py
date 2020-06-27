@@ -2,18 +2,22 @@ import time
 
 import db_handler as db
 
-cursor = None
+conn = None
 
 def connect():
-  global cursor
-  cursor = db.connect("thanks.db") 
+  global conn
+  conn = db.connect("thanks.db") 
 
-def new_thanks(thanker, thankee, message):
-  global cursor
-  db.insert(cursor, "thanks", (thanker, thankee, message, time.time()))
-  if db.select(cursor, "thanks", "*", "WHERE user_id=" + thanker) == None:
-    db.insert(cursor, "thanks", (thanker, 0, 0))
-  if db.select(cursor, "thanks", "*", "WHERE user_id=" + thankee) == None:
-    db.insert(cursor, "thanks", (thankee, 0, 0))
-  db.update(cursor, "thanks", "given=given+1", "WHERE user_id=" + thanker)
-  db.update(cursor, "thanks", "received=received+1", "WHERE user_id=" + thankee)
+def new_thanks(from_id, to_id, message):
+  global conn
+  thanker = str(from_id)
+  thankee = str(to_id)
+  user_columns = ("user_id", "given", "received")
+  thanks_columns = ("thanker_id", "recipient_id", "message", "timestamp")
+  db.insert(conn, "thanks", thanks_columns, (thanker, thankee, message, time.time()))
+  if len(db.select(conn, "users", "*", "WHERE user_id=" + thanker)) == 0:
+    db.insert(conn, "users", user_columns, (thanker, 0, 0))
+  if len(db.select(conn, "users", "*", "WHERE user_id=" + thankee)) == 0:
+    db.insert(conn, "users", user_columns, (thankee, 0, 0))
+  db.update(conn, "users", "given=given+1", "WHERE user_id=" + thanker)
+  db.update(conn, "users", "received=received+1", "WHERE user_id=" + thankee)

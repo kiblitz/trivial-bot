@@ -6,25 +6,25 @@ def connect(db_name):
   conn = sqlite3.connect(db_path)
   c = conn.cursor()
   atexit.register(c.close)
-  return c
+  return conn
 
-def insert(cursor, table, args, autocommit=True):
-  sql = "INSERT INTO " + table + totuple(args) + " VALUES" + qmark_args(len(args))
-  cursor.execute(sql, args) 
+def insert(conn, table, columns, args, autocommit=True):
+  sql = "INSERT INTO " + table + totuple(columns) + " VALUES" + qmark_args(len(args))
+  conn.cursor().execute(sql, args) 
   if autocommit:
-    cursor.commit()
-  return cursor.lastrowid
+    conn.commit()
+  return conn.cursor().lastrowid
 
-def update(cursor, table, what, conditions, autocommit=True):
+def update(conn, table, what, conditions, autocommit=True):
   sql = "UPDATE " + table + " SET " + what + " " + conditions
-  cursor.execute(sql)
+  conn.cursor().execute(sql)
   if autocommit:
-    cursor.commit()
-  return cursor.lastrowid
+    conn.commit()
+  return conn.cursor().lastrowid
 
-def select(cursor, table, what, conditions):
-  cursor.execute("SELECT " + what + " FROM " + table + " " + conditions)
-  return cursor.fetchall()
+def select(conn, table, what, conditions):
+  res = conn.cursor().execute("SELECT " + what + " FROM " + table + " " + conditions)
+  return res.fetchall()
 
 def qmark_args(num):
   s = '('
@@ -36,4 +36,4 @@ def totuple(args):
   s = '('
   for arg in args:
     s += arg + ','
-  s = s[:len(s)-1] + ')'
+  return s[:len(s)-1] + ')'
