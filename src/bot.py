@@ -28,6 +28,12 @@ def play_empty_error(author):
               "What does " + author.mention + " want to play?"] 
   return random.choice(possible)
 
+def num_error(author):
+  possible = ["Whoops! I was expecting a number " + author.mention,
+              "Make sure to use numbers in your command " + author.mention,
+              "Looks like I'm going to need a number instead " + author.mention] 
+  return random.choice(possible)
+
 def unknown_error(author):
   possible = ["Not sure I understood that keyword " + author.mention,
               "That doesn't seem to be part of my lexicon " + author.mention,
@@ -56,9 +62,13 @@ class MyClient(discord.Client):
       return 
 
     if msg_lst[0][0] == '!':
-      (await self.check_thanks(author, msg_lst, message.channel, message.mentions) or
-      await self.check_show(author, msg_lst, message.channel, message.mentions) or
-      await self.check_play(author, msg_lst, message.channel, message.mentions))
+      if (await self.check_thanks(author, msg_lst, message.channel, message.mentions) or
+          await self.check_show(author, msg_lst, message.channel, message.mentions) or
+          await self.check_play(author, msg_lst, message.channel, message.mentions) or
+          await self.check_coin(author, msg_lst, message.channel, message.mentions) or
+          await self.check_roll(author, msg_lst, message.channel, message.mentions)):
+        return
+      await message.channel.send(unknown_error(author))
 
   async def check_thanks(self, author, message, channel, mentions):
     if message[0] != '!thanks':
@@ -101,6 +111,26 @@ class MyClient(discord.Client):
       return True
     # TODO see check_show
     await channel.send(unimplemented_error(author))
+    return True
+
+  async def check_coin(self, author, message, channel, mentions):
+    if message[0] != '!coin':
+      return False
+    await channel.send(random.choice(["Heads", "Tails"]) + " " + author.mention)
+    return True
+
+  async def check_roll(self, author, message, channel, mentions):
+    if message[0] != '!roll':
+      return False
+    if len(message) == 1:
+      sides = 6 
+    else:
+      try:
+        sides = int(message[1]) 
+      except:
+        await channel.send(num_error(author))
+        return True
+    await channel.send(str(random.randint(1, sides)) + " " + author.mention)
     return True
 
 TOKEN = open("../secret/SECRET_TOKEN").read()
