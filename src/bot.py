@@ -28,6 +28,12 @@ def play_empty_error(author):
               "What does " + author.mention + " want to play?"] 
   return random.choice(possible)
 
+def rand_empty_error(author):
+  possible = ["I'm going to need a non-empty list to choose from, " + author.mention,
+              "Sorry " + author.mention + ", picking from an empty list is pretty non-trivial",
+              "At least one element is needed " + author.mention] 
+  return random.choice(possible)
+
 def num_error(author):
   possible = ["Whoops! I was expecting a number " + author.mention,
               "Make sure to use numbers in your command " + author.mention,
@@ -66,7 +72,8 @@ class MyClient(discord.Client):
           await self.check_show(author, msg_lst, message.channel, message.mentions) or
           await self.check_play(author, msg_lst, message.channel, message.mentions) or
           await self.check_coin(author, msg_lst, message.channel, message.mentions) or
-          await self.check_roll(author, msg_lst, message.channel, message.mentions)):
+          await self.check_roll(author, msg_lst, message.channel, message.mentions) or
+          await self.check_rand(author, msg_lst, message.channel, message.mentions)):
         return
       await message.channel.send(unknown_error(author))
 
@@ -131,6 +138,15 @@ class MyClient(discord.Client):
         await channel.send(num_error(author))
         return True
     await channel.send(str(random.randint(1, sides)) + " " + author.mention)
+    return True
+
+  async def check_rand(self, author, message, channel, mentions):
+    if message[0] != '!rand':
+      return False
+    if len(message) == 1:
+      await channel.send(rand_empty_error(author))
+      return True
+    await channel.send(random.choice(message[1:]) + " " + author.mention)
     return True
 
 TOKEN = open("../secret/SECRET_TOKEN").read()
