@@ -15,12 +15,19 @@ async def check_thanks(author, message, channel, mentions):
     return True
   ty_msg = ' '.join(message[2:])
   thanks_handler.new_thanks(author.id, mentions[0].id, ty_msg)
+  await channel.send(thanks_accepted(author, mentions[0]))
   return True 
 
 def thanks_mention_error(author):
   possible = ["Make sure to include who you're thanking " + author.mention,
               "Not sure who that's directed to " + author.mention,
               "Who was that for " + author.mention + "?"] 
+  return random.choice(possible)
+
+def thanks_accepted(author, to):
+  possible = ["Alright " + author.mention + ", your thanks to " + to.mention + " has been sent",
+              "Thanks for thanking " + to.mention + ", " + author.mention + "!",
+              "Wow " + to.mention + "! Looks like you received a thanks from " + author.mention + "!"]
   return random.choice(possible)
 
 class MyClient(discord.Client):
