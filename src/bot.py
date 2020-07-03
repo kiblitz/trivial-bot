@@ -30,6 +30,44 @@ def thanks_accepted(author, to):
               "Wow " + to.mention + "! Looks like you received a thanks from " + author.mention + "!"]
   return random.choice(possible)
 
+
+async def check_show(author, message, channel, mentions):
+  if message[0] != '!show':
+    return False 
+  if len(message) == 1:
+    await channel.send(show_empty_error(author)) 
+    return True
+  if ((not await show_thanks(author, message[1:], channel, mentions))):
+    await channel.send(unknown_error(author))
+  return True
+
+def show_empty_error(author):
+  possible = ["Not sure what you're trying to show " + author.mention,
+              "Make sure to specify what you want to show " + author.mention,
+              "Show you what, " + author.mention + "?"] 
+  return random.choice(possible)
+
+async def show_thanks(author, message, channel, mentions):
+  if message[0] != 'thanks':
+    return False
+  if len(message) == 1:
+    # TODO show your thanks
+    await channel.send(unimplemented_error(author))
+    return True
+   
+
+def unknown_error(author):
+  possible = ["Not sure I understood that keyword " + author.mention,
+              "That doesn't seem to be part of my lexicon " + author.mention,
+              "Sorry " + author.mention + ", I'm not sure what that means"]
+  return random.choice(possible)
+
+def unimplemented_error(author):
+  possible = ["Sorry " + author.mention + ", that feature doesn't seem to be implemented yet",
+              "Unfortunately, I haven't been taught how to do that " + author.mention,
+              "Whoops, looks like you found a command I don't know how to process yet " + author.mention]
+  return random.choice(possible)
+
 class MyClient(discord.Client):
   async def on_ready(self):
     print(f'{self.user} has connected to Discord!')
@@ -46,7 +84,8 @@ class MyClient(discord.Client):
       return 
 
     if msg_lst[0][0] == '!':
-      await check_thanks(author, msg_lst, message.channel, message.mentions)
+      (await check_thanks(author, msg_lst, message.channel, message.mentions) or
+      await check_show(author, msg_lst, message.channel, message.mentions))
 
 TOKEN = open("../secret/SECRET_TOKEN").read()
 client = MyClient()
